@@ -2,6 +2,8 @@
 
 http://rdio-nowplaying.herokuapp.com/
 
+![](http://files.jnewland.com/nowplaying-20120628-080034.jpg)
+
 Simple app to toss up on your media center TV that shows what song is currently playing in your rdio account.
 
 # Hacking
