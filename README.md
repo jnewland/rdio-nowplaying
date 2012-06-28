@@ -19,17 +19,17 @@ Then start:
     bundle install
     foreman start
 
-Boom: http://localhost:4567
+Boom: http://localhost:4567/
 
 # Running your own copy on heroku
 
+Create an app at heroku in a clone of this repo:
+
     heroku create --stack cedar jnewland-rdio-nowplaying
 
-Set the following config at heroku:
+Push your config up:
 
-    heroku config:add RDIO_CONSUMER_KEY=foo
-    heroku config:add RDIO_CONSUMER_SECRET=foo@foo.com
-    heroku config:add POLL_INTERVAL=10
+    heroku config:push
 
 Ship it:
 
