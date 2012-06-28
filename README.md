@@ -1,14 +1,14 @@
-# rdio Now Playing
+# Rdio Now Playing
 
 http://rdio-nowplaying.herokuapp.com/
 
 ![](http://files.jnewland.com/nowplaying-20120628-080034.jpg)
 
-Simple app to toss up on your media center TV that shows what song is currently playing in your rdio account.
+Simple app to toss up on your media center TV that shows what song is currently playing in your Rdio account.
 
 # Hacking
 
-Grab an [rdio API key](http://developer.rdio.com/)
+Grab an [Rdio API key](http://developer.rdio.com/)
 
 Create a `.env` file in this repo with your keys and the poll interval:
 
