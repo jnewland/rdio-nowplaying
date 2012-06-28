@@ -1,8 +1,27 @@
-## Running on Heroku
+# rdio Now Playing
 
-Clone this repo.
+http://rdio-nowplaying.herokuapp.com/
 
-In the clone:
+Simple app to toss up on your media center TV that shows what song is currently playing in your rdio account.
+
+# Hacking
+
+Grab an [rdio API key](http://developer.rdio.com/)
+
+Create a `.env` file in this repo with your keys and the poll interval:
+
+    RDIO_CONSUMER_KEY=foo
+    RDIO_CONSUMER_SECRET=bar
+    POLL_INTERVAL=30
+
+Then start:
+
+    bundle install
+    foreman start
+
+Boom: http://localhost:4567
+
+# Running your own copy on heroku
 
     heroku create --stack cedar jnewland-rdio-nowplaying
 
@@ -16,8 +35,14 @@ Ship it:
 
     git push heroku master
 
-Fire up a web process:
+# OMGHAX
 
-    heroku scale web=1
+This currently uses a HTML meta refresh tag to update on a poll interval. lol.
 
-Hit up [papertrail](https://papertrailapp.com/events) and check on the logs.
+# Credit Where Credit Is Due
+
+Styles shamelessly copypasta'd from [play](https://github.com/play/play).
+
+# License
+
+MIT
