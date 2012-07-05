@@ -31,6 +31,7 @@ POLL_INTERVAL        = ENV['POLL_INTERVAL']
 
 
 enable :sessions
+disable :protection
 
 set :public_folder, File.dirname(__FILE__) + '/static'
 
