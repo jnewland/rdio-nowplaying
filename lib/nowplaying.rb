@@ -61,8 +61,8 @@ get '/' do
 
 <link rel='stylesheet' href='/reset.css'>
 <link rel='stylesheet' href='/base.css'>
-<link media='only screen and (max-device-width: 480px)' href='/css/iphone.css' type='text/css' rel='stylesheet'>
-<link media='only screen and (max-device-width: 768px)' href='/css/tablet.css' type='ext/css' rel='stylesheet'>
+<link media='only screen and (max-device-width: 480px)' href='/iphone.css' type='text/css' rel='stylesheet'>
+<link media='only screen and (max-device-width: 768px)' href='/tablet.css' type='ext/css' rel='stylesheet'>
 <link media='only screen and (aspect-ratio: 16/9)' href='/tv.css' rel='stylesheet' type='text/css'>
 
 <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,700,600' rel='stylesheet' type='text/css'>
