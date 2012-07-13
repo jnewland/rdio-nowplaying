@@ -14,7 +14,6 @@ Create a `.env` file in this repo with your keys and the poll interval:
 
     RDIO_CONSUMER_KEY=foo
     RDIO_CONSUMER_SECRET=bar
-    POLL_INTERVAL=30
 
 Then start:
 
@@ -37,9 +36,6 @@ Ship it:
 
     git push heroku master
 
-# OMGHAX
-
-This currently uses a HTML meta refresh tag to update on a poll interval. lol.
 
 # Credit Where Credit Is Due
 

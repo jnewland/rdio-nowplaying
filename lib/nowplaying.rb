@@ -27,7 +27,6 @@ require 'rdio'
 
 RDIO_CONSUMER_KEY    = ENV['RDIO_CONSUMER_KEY']
 RDIO_CONSUMER_SECRET = ENV['RDIO_CONSUMER_SECRET']
-POLL_INTERVAL        = ENV['POLL_INTERVAL']
 
 
 enable :sessions
@@ -57,7 +56,6 @@ get '/' do
 
 <meta charset='utf-8'>
 <meta name='apple-mobile-web-app-capable' content='yes'>
-<meta http-equiv='refresh' content='%s' />
 
 <link rel='stylesheet' href='/reset.css'>
 <link rel='stylesheet' href='/base.css'>
@@ -83,7 +81,7 @@ get '/' do
 <img src='%s' class='album-art' />
 </section>
 <body>
-    " % [POLL_INTERVAL, song['name'], song['artist'], song['album'], song['bigIcon']]
+    " % [song['name'], song['artist'], song['album'], song['bigIcon']]
     response += '</body></html>'
     return response
   else
