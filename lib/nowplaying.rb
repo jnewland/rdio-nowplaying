@@ -34,6 +34,12 @@ disable :protection
 
 set :public_folder, File.dirname(__FILE__) + '/static'
 
+helpers do
+  def partial(page, options={})
+    erb page, options.merge!(:layout => false)
+  end
+end
+
 get '/' do
   access_token = session[:at]
   access_token_secret = session[:ats]
@@ -49,41 +55,7 @@ get '/' do
 
     song = rdio.call('get', { :keys => song_key, :extras => 'bigIcon'})['result'][song_key]
 
-    response = "
-<!DOCTYPE html>
-
-<head>
-
-<meta charset='utf-8'>
-<meta name='apple-mobile-web-app-capable' content='yes'>
-
-<link rel='stylesheet' href='/reset.css'>
-<link rel='stylesheet' href='/base.css'>
-<link media='only screen and (max-device-width: 480px)' href='/iphone.css' type='text/css' rel='stylesheet'>
-<link media='only screen and (max-device-width: 768px)' href='/tablet.css' type='ext/css' rel='stylesheet'>
-<link media='only screen and (aspect-ratio: 16/9)' href='/tv.css' rel='stylesheet' type='text/css'>
-
-<link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,700,600' rel='stylesheet' type='text/css'>
-<link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
-
-
-<title>Now Playing</title>
-
-</head>
-
-<body>
-<section id='now-playing' class='row'>
-<ul>
-  <li class='name'>%s</li>
-  <li class='artist'><em>by</em> %s</li>
-  <li class='album'><em>from</em> %s</li>
-</ul>
-<img src='%s' class='album-art' />
-</section>
-<body>
-    " % [song['name'], song['artist'], song['album'], song['bigIcon']]
-    response += '</body></html>'
-    return response
+    erb :index, :locals => {:song => song}
   else
     redirect to('/login')
   end
@@ -130,3 +102,171 @@ get '/logout' do
   session.clear
   redirect to('/')
 end
+
+get '/search/:search' do
+  access_token = session[:at]
+  access_token_secret = session[:ats]
+  if access_token and access_token_secret
+    rdio = Rdio.new([RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET],
+                    [access_token, access_token_secret])
+
+    erb :search, :locals => { :results => rdio.call('search', :query => (params[:search] || 'Rick Astley'), :types => 'Track,Album')['result']['results'] }
+  end
+end
+
+get '/queue' do
+  access_token = session[:at]
+  access_token_secret = session[:ats]
+  if access_token and access_token_secret
+    rdio = Rdio.new([RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET],
+                    [access_token, access_token_secret])
+
+    # TODO create playlist automatically
+    queue = rdio.call('getPlaylists', :extras => 'tracks')['result']['owned'].detect { |r| r['name'] == '_queue'}
+    tracks = queue['tracks']
+    playlist = queue['key']
+
+    # gotta prune the already played songs
+    user_key  = rdio.call('currentUser')['result']['key']
+    play_data = rdio.call('get', { :keys => user_key, :extras => 'lastSongPlayed'})['result'][user_key]
+
+    now_playing_track_key = play_data['lastSongPlayed']['key']
+    past_now_playing = false
+    tracks.each_with_index do |track, index|
+      if past_now_playing
+        track['played'] = false
+      else
+        track['played'] = true
+        if now_playing_track_key == track['key']
+          past_now_playing = true
+        else
+          logger.info rdio.call('removeFromPlaylist', {
+              :playlist => playlist,
+              :count    => 1,
+              :index    => 0,
+              :tracks   => track['key']
+            }
+          )
+        end
+      end
+    end
+    tracks = tracks.reject { |t| t['played'] == true }
+
+    erb :queue, :locals => { :tracks => tracks }
+  end
+end
+
+get '/queue/:keys' do
+  access_token = session[:at]
+  access_token_secret = session[:ats]
+  if access_token and access_token_secret
+    rdio = Rdio.new([RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET],
+                    [access_token, access_token_secret])
+
+    # TODO create playlist automatically
+    queue = rdio.call('getPlaylists')['result']['owned'].detect { |r| r['name'] == '_queue'}
+    playlist = queue['key']
+
+    params[:keys].split(',').each do |key|
+      rdio.call('addToPlaylist', :playlist => playlist, :tracks => key)
+    end
+    redirect '/queue'
+  end
+end
+
+__END__
+
+@@ layout
+<!DOCTYPE html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <link rel='stylesheet' href='/reset.css'>
+    <link rel='stylesheet' href='/base.css'>
+    <link media='only screen and (max-device-width: 480px)' href='/iphone.css' type='text/css' rel='stylesheet'>
+    <link media='only screen and (max-device-width: 768px)' href='/tablet.css' type='ext/css' rel='stylesheet'>
+    <link media='only screen and (aspect-ratio: 16/9)' href='/tv.css' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,700,600' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+    <title>Now Playing</title>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>
+
+@@ index
+<section id='now-playing' class='row'>
+  <ul>
+    <li class='name'><%= song['name'] %></li>
+    <li class='artist'><em>by</em> <%= song['artist'] %></li>
+    <li class='album'><em>from</em> <%= song['album'] %></li>
+  </ul>
+  <img src='<%= song['bigIcon'] %>' class='album-art' />
+</section>
+
+@@ inspect
+<section id='now-playing' class='row'>
+  <% inspect.each do |item| %>
+  <pre><code>
+    <%= item.inspect %>
+  </code></pre>
+  <% end %>
+</section>
+
+@@ search
+<section id='songs'>
+  <div class='list'>
+    <% results.each do |result| %>
+      <% if result['album'] %>
+        <div class="song">
+          <ul class="song-info">
+            <li><%= result['artist'] %></a></li>
+            <li><%= result['name'] %></li>
+          </ul>
+          <ul class="song-actions">
+            <li><a href="/queue/<%= result['key'] %>">add song to queue</a></li>
+          </ul>
+          <div class="song_album">
+            <img src="<%= result['icon'] %>">
+          </div>
+        </div>
+      <% else %>
+         <div class="song">
+          <ul class="song-info">
+            <li><%= result['artist'] %></a></li>
+            <li><%= result['name'] %></li>
+          </ul>
+          <ul class="song-actions">
+            <li><a href="/queue/<%= result['trackKeys'].join(',') %>">add album to queue</a></li>
+          </ul>
+          <div class="song_album">
+            <img src="<%= result['icon'] %>">
+          </div>
+        </div>
+       <% end %>
+    <% end %>
+  </div>
+</section>
+
+@@ queue
+<section id='songs'>
+  <div class='list'>
+    <% tracks.each_with_index do |track, index| %>
+      <% if !track['played'] %>
+        <div class="song">
+          <ul class="song-info">
+            <li><%= track['artist'] %></a></li>
+            <li><%= track['name'] %></li>
+          </ul>
+          <ul class="song-actions">
+            <li><a href="/dequeue/<%= track['key'] %>:<%= index %>">remove from queue</a></li>
+          </ul>
+          <div class="song_album">
+            <img src="<%= track['icon'] %>">
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</section>
